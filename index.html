@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AadiAnswer</title>
+  <!-- FIREBASE CLOUD SDK (Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=DM+Serif+Display&display=swap');
+
+    :root {
+      --aubergine: #443850;
+      --aubergine-dark: #2A1F36;
+      --lavender: #D5C6E0;
+      --lavender-light: #F0EBF8;
+      --lavender-trans: rgba(213, 198, 224, 0.12);
+      --lavender-trans2: rgba(213, 198, 224, 0.25);
+      --lavender-trans3: rgba(213, 198, 224, 0.4);
+      --sage: #C5E6A6;
+      --terracotta: #BE7C4D;
+      --steel: #3E78B2;
+
+      --text-dark: #F0EBF8;
+      --text-light: #2A1F36;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--aubergine);
+      color: var(--text-dark);
+      font-family: 'DM Sans', sans-serif;
+      overflow-x: hidden;
+      min-height: 100vh;
+      border-top: 5px solid transparent;
+      border-image: linear-gradient(to right, var(--steel), var(--sage), var(--terracotta)) 1;
+    }
+
+    h1, h2, h3, h4, .serif {
+      font-family: 'DM Serif Display', serif;
+      font-weight: normal;
+    }
+
+    /* Utilites */
+    .hidden { display: none !important; }
+    .card {
+      background: var(--lavender-trans);
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: 0 10px 40px rgba(42, 31, 54, 0.4);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(213, 198, 224, 0.1);
+      transition: box-shadow 0.3s ease, transform 0.3s ease;
+    }
+    
+    .btn {
+      color: var(--text-dark);
+      border: none;
+      padding: 0.85rem 1.8rem;
+      border-radius: 12px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: bold;
+      font-size: 1.05rem;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    .btn:hover { 
+      transform: translateY(-2px); 
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+      filter: brightness(1.15); 
+    }
+    .btn:active {
+      transform: translateY(1px);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+    
+    /* Login Screen */
+    #login-view {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: radial-gradient(circle at 50% -20%, rgba(62,120,178,0.15) 0%, transparent 60%);
+    }
+    .login-box {
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .login-box::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+      background: linear-gradient(90deg, var(--steel), var(--sage), var(--terracotta));
+    }
+    .login-box h1 { font-size: 3.5rem; margin-bottom: 0.5rem; letter-spacing: -1px; }
+    .login-box p { color: var(--lavender); margin-bottom: 2.5rem; font-size: 1.1rem; }
+    
+    .input-grp { margin-bottom: 1.5rem; text-align: left; }
+    .input-grp label { display: block; margin-bottom: 0.6rem; font-size: 0.95rem; color: var(--lavender); font-weight: 500;}
+    .input-grp input {
+      width: 100%;
+      padding: 0.9rem;
+      border-radius: 8px;
+      border: 1px solid var(--lavender-trans3);
+      background: rgba(42, 31, 54, 0.6);
+      color: var(--text-dark);
+      font-size: 1rem;
+      transition: all 0.25s ease;
+    }
+    .input-grp input:focus {
+      outline: none;
+      border-color: var(--steel);
+      box-shadow: 0 0 0 3px rgba(62, 120, 178, 0.2);
+      background: rgba(42, 31, 54, 0.9);
+    }
+    #login-err { color: var(--terracotta); font-size: 0.9rem; margin-top: 1.5rem; display: none; font-weight: bold; background: rgba(190,124,77,0.1); padding: 0.5rem; border-radius: 6px;}
+    
+    .login-btn { 
+      width: 100%; margin-top: 1.5rem;
+      background: linear-gradient(135deg, var(--steel), var(--aubergine-dark));
+      border: 1px solid var(--steel);
+    }
+
+    /* App Layout */
+    #app-view {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem;
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 3rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--lavender-trans2);
+    }
+    nav h2 { 
+      font-size: 2.2rem; cursor: pointer; transition: color 0.3s ease;
+    }
+    nav h2:hover { color: var(--sage); }
+    
+    .btn-logout { 
+      background: rgba(190, 124, 77, 0.15); 
+      color: var(--terracotta); 
+      border: 1px solid rgba(190, 124, 77, 0.3);
+      padding: 0.5rem 1rem; 
+      border-radius: 8px; 
+      font-weight: 500;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .btn-logout:hover {
+      background: var(--terracotta);
+      color: var(--aubergine-dark);
+    }
+
+    /* Dashboard */
+    .dashboard-header {
+      margin-bottom: 2rem;
+      font-size: 1.8rem;
+      color: var(--lavender);
+    }
+
+    .subjects-list { 
+      display: grid; 
+      grid-template-columns: 1fr; 
+      gap: 1.5rem; 
+    }
+    @media (min-width: 768px) {
+      .subjects-list { grid-template-columns: repeat(3, 1fr); }
+    }
+    
+    .subject-card {
+      padding: 2rem 1.5rem;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      min-height: 200px;
+    }
+    
+    .subject-card::before {
+      content: ''; position: absolute; top:0; left:0; right:0; bottom:0;
+      background-size: cover; opacity: 0.05; transition: opacity 0.4s ease;
+    }
+    .subject-card:hover::before { opacity: 0.15; }
+    
+    .subject-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0,0,0,0.3); }
+    
+    .sub-phys { border-top: 6px solid var(--steel); background: linear-gradient(180deg, rgba(62,120,178,0.1) 0%, transparent 100%); }
+    .sub-chem { border-top: 6px solid var(--terracotta); background: linear-gradient(180deg, rgba(190,124,77,0.1) 0%, transparent 100%); }
+    .sub-math { border-top: 6px solid var(--sage); background: linear-gradient(180deg, rgba(197,230,166,0.1) 0%, transparent 100%); }
+
+    .sub-info h3 { font-size: 2rem; margin-bottom: 0.5rem; z-index: 1;}
+    .sub-info p { color: var(--lavender); font-size: 1rem; opacity: 0.8; z-index: 1;}
+    
+
+    /* Subject View */
+    .subject-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;}
+    .subject-title { font-size: 3rem; display: flex; align-items: center; gap: 1rem; color: var(--sage);}
+    .subject-title.phys-title { color: var(--steel); }
+    .subject-title.chem-title { color: var(--terracotta); }
+    .subject-title.math-title { color: var(--sage); }
+    
+    .icon-cube { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center;}
+    
+    /* Chapter Accordions */
+    .chapter-accordion {
+      background: var(--lavender-trans);
+      border-radius: 12px;
+      margin-bottom: 1.2rem;
+      border: 1px solid rgba(213, 198, 224, 0.05);
+      transition: all 0.3s ease;
+    }
+    .chapter-accordion:hover {
+      border-color: rgba(213, 198, 224, 0.2);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    .chap-header {
+      padding: 1.5rem;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: 12px;
+      transition: background 0.3s ease;
+    }
+    .chap-header:hover { background: rgba(255,255,255,0.03); }
+    
+    .chap-info { display: flex; align-items: center; gap: 1rem;}
+    .chap-no { font-family: 'DM Serif Display'; font-size: 1.5rem; color: var(--lavender); opacity: 0.6; min-width: 40px;}
+    .chap-info h4 { font-size: 1.35rem; font-family: 'DM Sans'; font-weight: 500; }
+    
+    .badge {
+      padding: 0.35rem 0.9rem; border-radius: 99px; font-size: 0.85rem; font-weight: bold; letter-spacing: 0.5px;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .badge.complete { background: var(--sage); color: var(--aubergine-dark); box-shadow: 0 0 15px rgba(197,230,166,0.2);}
+    .badge.skipped { background: rgba(213, 198, 224, 0.1); color: var(--lavender); border: 1px solid rgba(213, 198, 224, 0.2); }
+    .badge.inprogress { background: rgba(0,0,0,0.3); border: 1px solid transparent;}
+    .badge.inprogress-phys { color: var(--steel); border-color: rgba(62,120,178,0.4); }
+    .badge.inprogress-chem { color: var(--terracotta); border-color: rgba(190,124,77,0.4); }
+    .badge.inprogress-math { color: var(--sage); border-color: rgba(197,230,166,0.4); }
+
+    /* Expanded Body */
+    .chap-body {
+      padding: 0 1.5rem;
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    .chap-body.expanded {
+      padding: 0 1.5rem 1.5rem 1.5rem;
+      max-height: 8000px;
+      opacity: 1;
+    }
+
+    /* Section Inputs */
+    .section-block {
+      background: rgba(20, 15, 25, 0.3);
+      border-left: 3px solid var(--lavender-trans3);
+      border-radius: 0 12px 12px 0;
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+      transition: all 0.3s ease;
+    }
+    .section-block:hover { background: rgba(20, 15, 25, 0.5); }
+    
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
+    .section-header h5 { font-size: 1.2rem; color: var(--text-dark); font-weight: 700;}
+
+    .ctrl-row {
+      display: flex; gap: 2rem; align-items: flex-end; flex-wrap: wrap; margin-bottom: 1.25rem;
+    }
+    .input-grp-mini { display: flex; flex-direction: column; gap: 0.4rem;}
+    .input-grp-mini label { font-size: 0.85rem; color: var(--lavender); font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;}
+    .input-mini {
+      width: 75px; padding: 0.6rem; border-radius: 6px;
+      border: 1px solid var(--lavender-trans2); background: rgba(0,0,0,0.3); color: var(--text-dark);
+      text-align: center; font-size: 1.1rem; font-weight: bold;
+      transition: all 0.3s ease;
+    }
+    .phys-input:focus { border-color: var(--steel); box-shadow: 0 0 0 3px rgba(62,120,178,0.2); outline: none;}
+    .chem-input:focus { border-color: var(--terracotta); box-shadow: 0 0 0 3px rgba(190,124,77,0.2); outline: none;}
+    .math-input:focus { border-color: var(--sage); box-shadow: 0 0 0 3px rgba(197,230,166,0.2); outline: none;}
+    
+    .toggle-lbl {
+      display: flex; align-items: center; gap: 0.75rem; cursor: pointer; font-size: 0.95rem; font-weight: 500;
+      padding-bottom: 0.5rem;
+    }
+    .toggle-switch {
+      appearance: none; width: 44px; height: 24px; border-radius: 12px;
+      background: var(--lavender-trans2); position: relative; cursor: pointer; outline: none;
+      transition: background 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    .toggle-switch::after {
+      content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px;
+      background: var(--text-dark); border-radius: 50%; transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    .toggle-switch:checked { background: var(--terracotta); }
+    .toggle-switch:checked::after { transform: translateX(20px); }
+    
+    .sect-progress { display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 200px; padding-bottom: 0.5rem;}
+    .sp-bar-wrap { flex: 1; height: 8px; background: var(--lavender-trans2); border-radius: 4px; overflow: hidden; }
+    .sp-bar { height: 100%; transition: width 0.5s cubic-bezier(0.25, 0.8, 0.25, 1); }
+    .sp-pct { font-weight: bold; font-size: 1.1rem; width: 45px; text-align: right; color: var(--lavender);}
+
+    /* Upload & Images */
+    .upload-area { margin-top: 1rem; padding-top: 1.25rem; border-top: 1px dashed rgba(213, 198, 224, 0.15);}
+    .upload-lbl { 
+      cursor: pointer; color: var(--sage); font-weight: 600; font-size: 0.95rem; display:inline-flex; align-items: center; gap: 0.5rem;
+      background: rgba(197,230,166,0.1); padding: 0.5rem 1rem; border-radius: 6px; transition: all 0.3s ease;
+    }
+    .upload-lbl:hover { background: rgba(197,230,166,0.2); }
+    .phys-up { color: var(--steel); background: rgba(62,120,178,0.1); }
+    .phys-up:hover { background: rgba(62,120,178,0.2); }
+    .chem-up { color: var(--terracotta); background: rgba(190,124,77,0.1); }
+    .chem-up:hover { background: rgba(190,124,77,0.2); }
+    
+    .file-input { display: none; }
+    
+    .thumb-grid { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1rem; }
+    .thumb { 
+      width: 80px; height: 80px; border-radius: 8px; background-size: cover; background-position: center; 
+      position: relative; cursor: pointer; border: 2px solid transparent; transition: all 0.3s ease;
+    }
+    .thumb:hover { transform: scale(1.05); border-color: var(--sage); z-index: 2;}
+    .thumb-overlay {
+      position: absolute; top:0; left:0; right:0; bottom:0; background: rgba(42,31,54,0.7);
+      display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight:bold; opacity: 0; transition: opacity 0.2s;
+      border-radius: 6px;
+    }
+    .thumb:hover .thumb-overlay { opacity: 1; }
+    .del-thumb { position: absolute; top: -8px; right: -8px; background: var(--terracotta); width: 22px; height: 22px; border-radius: 50%; text-align:center; line-height: 20px; font-size: 14px; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: transform 0.2s;}
+    .del-thumb:hover { transform: scale(1.15); }
+
+    /* Lightbox */
+    #lightbox {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(20,15,30,0.95);
+      display: flex; align-items: center; justify-content: center; z-index: 1000;
+      backdrop-filter: blur(10px);
+      opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+    }
+    #lightbox.show { opacity: 1; pointer-events: all; }
+    #lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.6); transform: scale(0.95); transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
+    #lightbox.show img { transform: scale(1); }
+    
+    .add-dpp-btn {
+      background: transparent; border: 2px dashed rgba(213, 198, 224, 0.3); color: var(--lavender);
+      padding: 1rem; border-radius: 8px; cursor: pointer; font-family: 'DM Sans'; font-weight: bold; font-size: 1.05rem;
+      width: 100%; margin-top: 1rem; transition: all 0.3s ease;
+    }
+    .add-dpp-btn:hover { background: rgba(213, 198, 224, 0.1); border-color: var(--lavender); color: var(--text-dark);}
+    
+    .add-dpp-phys:hover { background: rgba(62,120,178,0.1); border-color: var(--steel); color: var(--steel);}
+    .add-dpp-chem:hover { background: rgba(190,124,77,0.1); border-color: var(--terracotta); color: var(--terracotta);}
+    .add-dpp-math:hover { background: rgba(197,230,166,0.1); border-color: var(--sage); color: var(--sage);}
+  </style>
+</head>
+<body>
+
+  <!-- Login View -->
+  <div id="login-view">
+    <div class="card login-box">
+      <h1>AadiAnswer</h1>
+      <p>Your Class 12 command center.</p>
+      
+      <div class="input-grp">
+        <label>Username</label>
+        <input type="text" id="username" placeholder="Enter username..." autocomplete="off">
+      </div>
+      <div class="input-grp">
+        <label>Password</label>
+        <input type="password" id="password" placeholder="Enter password...">
+      </div>
+      <button class="btn login-btn" onclick="app.login()">Launch HQ</button>
+      <div id="login-err">Invalid credentials.</div>
+    </div>
+  </div>
+
+  <!-- App View -->
+  <div id="app-view" class="hidden">
+    <nav>
+      <h2 onclick="app.showDashboard()">AadiAnswer</h2>
+      <button class="btn-logout" onclick="app.logout()">Sign Out</button>
+    </nav>
+    
+    <!-- Dashboard Container -->
+    <div id="dashboard-container">
+      <h3 class="dashboard-header serif">Select your battlefield</h3>
+      <div class="subjects-list" id="subjects-container">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+
+    <!-- Subject Detail Container -->
+    <div id="subject-container" class="hidden">
+      <!-- Rendered via JS -->
+    </div>
+  </div>
+
+  <!-- Lightbox -->
+  <div id="lightbox" onclick="this.classList.remove('show')">
+    <img id="lightbox-img" src="" alt="Solution Photo" onclick="event.stopPropagation()">
+  </div>
+
+<script>
+// ==========================================
+// ⚠️ MANDATORY: REPLACE WITH YOUR FIREBASE KEYS
+// ==========================================
+const firebaseConfig = {
+  apiKey: "AIzaSyCFyB2VAoGiOrEGtfcKsy3WdGGAEjERIkE",
+  authDomain: "aadianswer.firebaseapp.com",
+  projectId: "aadianswer",
+  storageBucket: "aadianswer.firebasestorage.app",
+  messagingSenderId: "297876152705",
+  appId: "1:297876152705:web:1ed387be14f49b9cc3c880"
+};
+
+let db = null;
+let storage = null;
+let isFirebaseReady = false;
+
+try {
+  if(firebaseConfig.apiKey !== "REPLACE_ME_API_KEY") {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+    storage = firebase.storage();
+    isFirebaseReady = true;
+  }
+} catch(e) {
+  console.error("Firebase init failed", e);
+}
+
+const syllabus = {
+  physics: ["Electric Charges and Fields", "Electrostatic Potential and Capacitance", "Current Electricity", "Moving Charges and Magnetism", "Magnetism and Matter", "Electromagnetic Induction", "Alternating Current", "Electromagnetic Waves", "Ray Optics and Optical Instruments", "Wave Optics", "Dual Nature of Radiation and Matter", "Atoms", "Nuclei", "Semiconductor Electronics", "Experimental Physics & Misc"],
+  chemistry: ["Haloalkanes and Haloarenes", "Alcohols, Phenols and Ethers", "Aldehydes, Ketones and Carboxylic Acids", "Amines", "Biomolecules", "Polymers", "The Solid State", "Solutions", "Electrochemistry", "Chemical Kinetics", "Surface Chemistry", "Coordination Compounds", "The p-Block Elements", "The d and f-Block Elements", "Salt Analysis", "Isolation of Metals", "Chemistry in Everyday Life"],
+  maths: ["Determinants", "Matrices", "Relations and Functions", "Inverse Trigonometric Functions", "Continuity and Differentiability", "Method of Differentiation", "Application of Derivatives", "Indefinite Integration", "Definite Integration", "Application of Integrals", "Differential Equation", "Vector Algebra", "Three Dimensional Geometry", "Linear Programming", "Probability"]
+};
+const defaultSections = ["Prarambh", "Prabal", "Parikshit", "PYQs"];
+
+const colors = {
+  physics: 'var(--steel)',
+  chemistry: 'var(--terracotta)',
+  maths: 'var(--sage)'
+};
+
+const app = (function() {
+  let state = { physics: [], chemistry: [], maths: [] };
+  let imageState = {}; 
+
+  // 1. Initialization
+  async function init() {
+    if(!isFirebaseReady && sessionStorage.getItem('st_auth') === 'true') {
+      alert("⚠️ Firebase is not configured! Please open index.html and update the keys at the top of the <script> tag!");
+      document.body.innerHTML = "<h1 style='color:var(--terracotta); text-align:center; margin-top:20%'>FIREBASE KEYS MISSING.<br>Please edit index.html, paste your config, and refresh!</h1>";
+      return;
+    }
+
+    if(sessionStorage.getItem('st_auth') === 'true') {
+      document.getElementById('login-view').classList.add('hidden');
+      document.getElementById('app-view').classList.remove('hidden');
+      await loadData();
+      renderDashboard();
+    }
+  }
+
+  function login() {
+    const u = document.getElementById('username').value;
+    const p = document.getElementById('password').value;
+    if(u === 'aadish' && p === '12th') {
+      sessionStorage.setItem('st_auth', 'true');
+      document.getElementById('login-err').style.display = 'none';
+      init();
+    } else {
+      document.getElementById('login-err').style.display = 'block';
+    }
+  }
+
+  function logout() {
+    sessionStorage.removeItem('st_auth');
+    location.reload();
+  }
+
+  // 2. Cloud State Mgmt
+  async function loadData() {
+    try {
+      const stateDoc = await db.collection("AadiAnswer").doc("state").get();
+      const imgDoc = await db.collection("AadiAnswer").doc("images").get();
+
+      if (stateDoc.exists) {
+        state = stateDoc.data();
+      } else {
+        // Scaffold default cloud data
+        for(let key of ['physics', 'chemistry', 'maths']) {
+          state[key] = syllabus[key].map(ch => ({
+            name: ch,
+            sections: defaultSections.map(s => ({ name: s, total: 0, done: 0, skipped: false }))
+          }));
+        }
+        await saveStateSync();
+      }
+      
+      if (imgDoc.exists) {
+        imageState = imgDoc.data();
+      } else {
+        imageState = {};
+      }
+    } catch (e) {
+      console.error("Firebase read failed", e);
+    }
+  }
+
+  let saveTo;
+  function saveState() {
+    clearTimeout(saveTo);
+    saveTo = setTimeout(saveStateSync, 800);
+  }
+
+  async function saveStateSync() {
+    try {
+      if(db) await db.collection("AadiAnswer").doc("state").set(state);
+    } catch(e) { console.error("Cloud save failed", e); }
+  }
+
+  async function saveImagesSync() {
+    try {
+      if(db) await db.collection("AadiAnswer").doc("images").set(imageState);
+    } catch(e) { console.error("Cloud image list save failed", e); }
+  }
+
+  // 3. UI Rendering & Calc
+  function calcProgress(secs) {
+    let t = 0, d = 0;
+    for(let s of secs) {
+      if(!s.skipped) { t += s.total; d += s.done; }
+    }
+    return t > 0 ? { pct: Math.round((d/t)*100), total: t, done: d } : { pct: 0, noData: true };
+  }
+
+  function calcSubjectProgress(sub) {
+    let t = 0, d = 0;
+    for(let ch of state[sub]) {
+      for(let s of ch.sections) {
+        if(!s.skipped) { t += s.total; d += s.done; }
+      }
+    }
+    return t > 0 ? Math.round((d/t)*100) : 0;
+  }
+
+  function showDashboard() {
+    renderDashboard();
+    document.getElementById('dashboard-container').classList.remove('hidden');
+    document.getElementById('subject-container').classList.add('hidden');
+  }
+
+  function renderDashboard() {
+    const cont = document.getElementById('subjects-container');
+    cont.innerHTML = `
+      ${renderSubCard('physics', 'Physics', 'sub-phys', '15 Chapters')}
+      ${renderSubCard('chemistry', 'Chemistry', 'sub-chem', '17 Chapters')}
+      ${renderSubCard('maths', 'Mathematics', 'sub-math', '15 Chapters')}
+    `;
+  }
+
+  function renderSubCard(key, title, brdCls, subtitle) {
+    return `
+      <div class="card subject-card ${brdCls}" onclick="app.showSubject('${key}')">
+        <div class="sub-info">
+          <h3 class="serif">${title}</h3>
+          <p>${subtitle}</p>
+        </div>
+      </div>
+    `;
+  }
+
+  function showSubject(key) {
+    document.getElementById('dashboard-container').classList.add('hidden');
+    const cont = document.getElementById('subject-container');
+    cont.classList.remove('hidden');
+
+    const titleMap = { physics:'Physics', chemistry:'Chemistry', maths:'Mathematics' };
+    const shortMap = { physics:'PH', chemistry:'CH', maths:'MA' };
+    const titleCls = { physics:'phys-title', chemistry:'chem-title', maths:'math-title' };
+    
+    let html = `
+      <div class="subject-header">
+        <h2 class="subject-title serif ${titleCls[key]}">
+           <div class="icon-cube" style="background: rgba(255,255,255,0.1); border: 2px solid ${colors[key]}; color: var(--text-dark); font-size:1.2rem; font-family:'DM Sans'; font-weight:bold;">${shortMap[key]}</div>
+           ${titleMap[key]}
+        </h2>
+        <button class="btn" style="background: ${colors[key]}" onclick="app.showDashboard()">Enter HQ</button>
+      </div>
+    `;
+
+    state[key].forEach((ch, idx) => {
+      const p = calcProgress(ch.sections);
+      let badge = '';
+      if(p.noData) badge = `<span class="badge skipped">0 Sections</span>`;
+      else if(p.pct === 100) badge = `<span class="badge complete">Complete</span>`;
+      else badge = `<span class="badge inprogress inprogress-${key}">${p.pct}%</span>`;
+
+      html += `
+        <div class="chapter-accordion">
+          <div class="chap-header" onclick="app.toggleChap(this)">
+            <div class="chap-info">
+               <span class="chap-no">${String(idx+1).padStart(2,'0')}</span>
+               <h4>${ch.name}</h4>
+            </div>
+            <div id="${key}-ch${idx}-badge">${badge}</div>
+          </div>
+          <div class="chap-body" id="${key}-body-${idx}">
+            <div class="ch-sections" id="${key}-secs-${idx}">
+               ${renderSections(key, idx)}
+            </div>
+            <button class="add-dpp-btn add-dpp-${key}" onclick="app.addDpp('${key}', ${idx})">+ Add DPP Mission</button>
+          </div>
+        </div>
+      `;
+    });
+
+    cont.innerHTML = html;
+  }
+
+  function renderSections(sub, chIdx) {
+    const ch = state[sub][chIdx];
+    return ch.sections.map((s, sIdx) => renderSectionBlock(sub, chIdx, sIdx, s)).join('');
+  }
+
+  function renderSectionBlock(sub, chIdx, sIdx, s) {
+    const isDPP = s.name.startsWith('DPP');
+    const dStyle = s.skipped ? 'opacity:0.4; pointer-events:none; filter:grayscale(1);' : '';
+    const imgKey = `studytrack_images_${sub}_${chIdx}_${s.name}`;
+    const imgs = imageState[imgKey] || [];
+    
+    let stateBadge = '';
+    if(s.skipped) stateBadge = `<span class="badge skipped">Skipped</span>`;
+    else if(s.total > 0 && s.done >= s.total) stateBadge = `<span class="badge complete">Complete</span>`;
+    else if(s.total > 0) stateBadge = `<span class="badge inprogress inprogress-${sub}">${Math.round((s.done/s.total)*100)}%</span>`;
+    else stateBadge = `<span class="badge skipped">Not Started</span>`;
+    
+    return `
+      <div class="section-block" style="border-left-color: ${s.skipped ? 'var(--lavender-trans3)' : colors[sub]}" id="block-${sub}-${chIdx}-${sIdx}">
+        <div class="section-header">
+          <h5 class="serif">${s.name}</h5>
+          <div>${stateBadge}
+             ${isDPP ? `<span style="cursor:pointer; margin-left:15px; color:var(--terracotta); font-size:1.5rem; line-height:1;" onclick="app.delDpp('${sub}',${chIdx},${sIdx})">&times;</span>` : ''}
+          </div>
+        </div>
+        
+        <div class="ctrl-row">
+          <div class="input-grp-mini">
+            <label>Total Qs</label>
+            <input type="number" min="0" class="input-mini ${sub}-input" value="${s.total}" oninput="app.updateData('${sub}',${chIdx},${sIdx},'total',this.value)">
+          </div>
+          <div class="input-grp-mini">
+            <label>Done</label>
+            <input type="number" min="0" class="input-mini ${sub}-input" value="${s.done}" oninput="app.updateData('${sub}',${chIdx},${sIdx},'done',this.value)">
+          </div>
+          
+          <label class="toggle-lbl">
+            <input type="checkbox" class="toggle-switch" ${s.skipped ? 'checked' : ''} onchange="app.updateData('${sub}',${chIdx},${sIdx},'skipped',this.checked)">
+            Not Needed
+          </label>
+          
+          <div class="sect-progress" style="${dStyle}">
+             <div class="sp-bar-wrap">
+                <div class="sp-bar" style="background:${colors[sub]}; width:${s.total>0? Math.round((s.done/s.total)*100): 0}%"></div>
+             </div>
+             <div class="sp-pct">${s.total>0? Math.round((s.done/s.total)*100) + '%' : '—'}</div>
+          </div>
+        </div>
+        
+        <div class="upload-area" style="${dStyle}">
+           <label class="upload-lbl ${sub}-up" id="up-lbl-${sub}-${chIdx}-${sIdx}">
+              <span style="font-size:1.2rem;">+</span> Upload Intel (Photos)
+              <input type="file" multiple accept="image/*" class="file-input" onchange="app.handleFiles(this, '${imgKey}', '${sub}',${chIdx},${sIdx})">
+           </label>
+           <div class="thumb-grid" id="tb-${sub}-${chIdx}-${sIdx}">
+              ${imgs.map((src, i) => `
+                <div class="thumb" style="background-image:url('${src}')" onclick="app.lightbox('${src}')">
+                  <div class="thumb-overlay">Enlarge</div>
+                  <div class="del-thumb" onclick="event.stopPropagation(); app.delImage('${imgKey}',${i}, '${sub}',${chIdx},${sIdx}, '${src}')">&times;</div>
+                </div>
+              `).join('')}
+           </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function toggleChap(el) {
+    const body = el.nextElementSibling;
+    if(body.classList.contains('expanded')) {
+      body.classList.remove('expanded');
+    } else {
+      body.classList.add('expanded');
+    }
+  }
+
+  function updateData(sub, chIdx, sIdx, field, val) {
+    const s = state[sub][chIdx].sections[sIdx];
+    if(field === 'skipped') s.skipped = val;
+    else s[field] = parseInt(val) || 0;
+    
+    saveState();
+
+    const blk = document.getElementById(`block-${sub}-${chIdx}-${sIdx}`);
+    if(blk) {
+      blk.outerHTML = renderSectionBlock(sub, chIdx, sIdx, s);
+    }
+    
+    const ch = state[sub][chIdx];
+    const p = calcProgress(ch.sections);
+    let badge = '';
+    if(p.noData) badge = `<span class="badge skipped">0 Sections</span>`;
+    else if(p.pct === 100) badge = `<span class="badge complete">Complete</span>`;
+    else badge = `<span class="badge inprogress inprogress-${sub}">${p.pct}%</span>`;
+    document.getElementById(`${sub}-ch${chIdx}-badge`).innerHTML = badge;
+  }
+
+  function addDpp(sub, chIdx) {
+    const secs = state[sub][chIdx].sections;
+    let maxDpp = 0;
+    secs.forEach(s => {
+      if(s.name.startsWith('DPP ')) {
+        const num = parseInt(s.name.replace('DPP ',''));
+        if(num > maxDpp) maxDpp = num;
+      }
+    });
+    secs.push({ name: `DPP ${maxDpp+1}`, total: 0, done: 0, skipped: false });
+    saveStateSync();
+    document.getElementById(`${sub}-secs-${chIdx}`).innerHTML = renderSections(sub, chIdx);
+    updateData(sub, chIdx, 0, 'none', null); 
+  }
+  
+  function delDpp(sub, chIdx, sIdx) {
+    const sName = state[sub][chIdx].sections[sIdx].name;
+    delete imageState[`studytrack_images_${sub}_${chIdx}_${sName}`];
+    saveImagesSync();
+    
+    state[sub][chIdx].sections.splice(sIdx, 1);
+    saveStateSync();
+    document.getElementById(`${sub}-secs-${chIdx}`).innerHTML = renderSections(sub, chIdx);
+    updateData(sub, chIdx, 0, 'none', null);
+  }
+
+  // 4. Firebase Cloud Image Handling
+  async function handleFiles(inp, key, sub, chIdx, sIdx) {
+    const files = inp.files;
+    if(!files.length) return;
+    
+    if(!imageState[key]) imageState[key] = [];
+    
+    const btn = document.getElementById(`up-lbl-${sub}-${chIdx}-${sIdx}`);
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = `<span style="font-size:1.2rem;">⚡</span> Cloud Syncing...`;
+    
+    for (const f of Array.from(files)) {
+      const r = new FileReader();
+      r.onload = (e) => {
+        const img = new Image();
+        img.onload = async () => {
+          const cvs = document.createElement('canvas');
+          const MAX = 800;
+          let w = img.width, h = img.height;
+          if(w > MAX || h > MAX) {
+            if(w>h) { h*=(MAX/w); w=MAX; }
+            else { w*=(MAX/h); h=MAX; }
+          }
+          cvs.width = w; cvs.height = h;
+          const ctx = cvs.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          const b64 = cvs.toDataURL('image/jpeg', 0.6); 
+          
+          try {
+            // Free ImgBB Upload
+            const pureBase64 = b64.replace(/^data:image\/[a-z]+;base64,/, "");
+            const formData = new FormData();
+            formData.append("key", "1ddde7d9840771c25c165fb53920a9ae");
+            formData.append("image", pureBase64);
+
+            const res = await fetch("https://api.imgbb.com/1/upload", {
+              method: "POST",
+              body: formData
+            });
+            const data = await res.json();
+            
+            if(data.success) {
+               imageState[key].push(data.data.url);
+               await saveImagesSync();
+
+               const blk = document.getElementById(`block-${sub}-${chIdx}-${sIdx}`);
+               if(blk) blk.outerHTML = renderSectionBlock(sub, chIdx, sIdx, state[sub][chIdx].sections[sIdx]);
+            } else {
+               alert("ImgBB Upload Failed: " + (data.error ? data.error.message : "Unknown error"));
+            }
+          } catch(e) { console.error("Upload failed", e); alert("Cloud Save Failed"); }
+        };
+        img.src = e.target.result;
+      };
+      r.readAsDataURL(f);
+    }
+    
+    btn.innerHTML = originalHTML; // restore button text
+  }
+
+  async function delImage(key, idx, sub, chIdx, sIdx, url) {
+    try {
+       // Only delete if it's a firebase URL
+       if(url.includes('firebasestorage')) {
+         const ref = storage.refFromURL(url);
+         await ref.delete();
+       }
+    } catch(e) { console.warn("Could not delete from storage bucket", e); }
+    
+    imageState[key].splice(idx, 1);
+    await saveImagesSync();
+    
+    const blk = document.getElementById(`block-${sub}-${chIdx}-${sIdx}`);
+    if(blk) blk.outerHTML = renderSectionBlock(sub, chIdx, sIdx, state[sub][chIdx].sections[sIdx]);
+  }
+
+  function lightbox(src) {
+    document.getElementById('lightbox-img').src = src;
+    document.getElementById('lightbox').classList.add('show');
+  }
+
+  return { login, logout, showDashboard, showSubject, toggleChap, updateData, addDpp, delDpp, handleFiles, lightbox, delImage, init };
+})();
+
+window.onload = app.init;
+</script>
+</body>
+</html>
