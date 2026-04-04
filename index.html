@@ -40,7 +40,15 @@
 
     body {
       
-      background: linear-gradient(90deg, hsla(355, 74%, 62%, 1) 0%, hsla(0, 0%, 3%, 1) 100%);
+      background: hsla(355, 74%, 62%, 1);
+
+background: linear-gradient(90deg, hsla(355, 74%, 62%, 1) 0%, hsla(0, 0%, 3%, 1) 100%);
+
+background: -moz-linear-gradient(90deg, hsla(355, 74%, 62%, 1) 0%, hsla(0, 0%, 3%, 1) 100%);
+
+background: -webkit-linear-gradient(90deg, hsla(355, 74%, 62%, 1) 0%, hsla(0, 0%, 3%, 1) 100%);
+
+filter: progid: DXImageTransform.Microsoft.gradient( startColorstr="#E65763", endColorstr="#080808", GradientType=1 );
       color: var(--text-dark);
       font-family: 'DM Sans', sans-serif;
       overflow-x: hidden;
