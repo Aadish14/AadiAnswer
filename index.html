@@ -8,7 +8,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bungee+Outline&family=Nabla&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
-  <!-- FIREBASE CLOUD SDK (Compat) -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
@@ -39,16 +38,14 @@
     }
 
     body {
+      /* Deep ambient dark background */
+      background-color: #130f1a;
+      background-image: 
+        radial-gradient(circle at 15% 10%, rgba(62, 120, 178, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 85% 20%, rgba(190, 124, 77, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 50% 80%, rgba(105, 120, 181, 0.15) 0%, transparent 50%);
+      background-attachment: fixed;
       
-      background: hsla(355, 74%, 62%, 1);
-
-background: linear-gradient(90deg, hsla(355, 74%, 62%, 1) 0%, hsla(0, 0%, 3%, 1) 100%);
-
-background: -moz-linear-gradient(90deg, hsla(355, 74%, 62%, 1) 0%, hsla(0, 0%, 3%, 1) 100%);
-
-background: -webkit-linear-gradient(90deg, hsla(355, 74%, 62%, 1) 0%, hsla(0, 0%, 3%, 1) 100%);
-
-filter: progid: DXImageTransform.Microsoft.gradient( startColorstr="#E65763", endColorstr="#080808", GradientType=1 );
       color: var(--text-dark);
       font-family: 'DM Sans', sans-serif;
       overflow-x: hidden;
@@ -57,11 +54,7 @@ filter: progid: DXImageTransform.Microsoft.gradient( startColorstr="#E65763", en
       border-image: linear-gradient(to right, var(--steel), var(--sage), var(--terracotta)) 1;
     }
 
-    h1,
-    h2,
-    h3,
-    h4,
-    .serif {
+    h1, h2, h3, h4, .serif {
       font-family: 'DM Serif Display', serif;
       font-weight: normal;
     }
@@ -112,7 +105,6 @@ filter: progid: DXImageTransform.Microsoft.gradient( startColorstr="#E65763", en
       align-items: center;
       justify-content: center;
       height: 100vh;
-      background: radial-gradient(circle at 50% -20%, rgba(62, 120, 178, 0.15) 0%, transparent 60%);
     }
 
     .login-box {
@@ -318,7 +310,6 @@ filter: progid: DXImageTransform.Microsoft.gradient( startColorstr="#E65763", en
       opacity: 0.8;
       z-index: 1;
     }
-
 
     /* Subject View */
     .subject-header {
@@ -804,12 +795,14 @@ filter: progid: DXImageTransform.Microsoft.gradient( startColorstr="#E65763", en
       border-color: var(--sage);
       color: var(--sage);
     }
+
     #cam-modal {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(20,15,30,0.95); z-index: 3000;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       backdrop-filter: blur(10px);
     }
+
     #cam-video {
       width: 90%; max-width: 600px;
       border-radius: 12px;
@@ -817,9 +810,11 @@ filter: progid: DXImageTransform.Microsoft.gradient( startColorstr="#E65763", en
       background: #000;
       box-shadow: 0 20px 60px rgba(0,0,0,0.6);
     }
+
     .cam-ctrls { display: flex; gap: 1rem; }
     .btn-cam { background: var(--terracotta); color: #fff; padding: 1rem 2rem; border-radius: 50px; font-weight: bold; border: none; cursor: pointer; }
     .btn-cam-close { background: transparent; color: var(--text-dark); border: 2px solid rgba(255,255,255,0.2); padding: 1rem 2rem; border-radius: 50px; font-weight: bold; cursor: pointer; }
+    
     .made-by-badge {
       position: fixed;
       bottom: 24px;
@@ -841,13 +836,100 @@ filter: progid: DXImageTransform.Microsoft.gradient( startColorstr="#E65763", en
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 0 10px rgba(255, 255, 255, 0.05);
       text-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
     }
+
+    /* Toast Notification */
+    #toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--aubergine-dark);
+      color: var(--text-dark);
+      padding: 1rem 2rem;
+      border-radius: 50px;
+      font-weight: bold;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+      z-index: 9999;
+      pointer-events: none;
+    }
+    #toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+    #toast.error {
+      background: var(--terracotta);
+    }
+
+    /* Loading Overlay */
+    #loader-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(20, 15, 30, 0.9);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 5000;
+      backdrop-filter: blur(5px);
+      transition: opacity 0.4s ease;
+    }
+    .loader-spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid var(--lavender-trans2);
+      border-top-color: var(--sage);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 1rem;
+    }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+
+    /* --- MOBILE RESPONSIVENESS POLISH --- */
+    @media (max-width: 500px) {
+      .subject-title {
+        font-size: 2.2rem; /* Scale down massive titles on mobile */
+      }
+      
+      .ctrl-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* Inputs sit side-by-side evenly */
+        gap: 1.25rem;
+        align-items: flex-end;
+      }
+      
+      .input-grp-mini {
+        width: 100%;
+      }
+      
+      .input-mini {
+        width: 100%; /* Inputs fill their designated half of the screen */
+        box-sizing: border-box;
+      }
+      
+      .toggle-lbl, .sect-progress {
+        grid-column: 1 / -1; /* Forces these to span the entire width */
+        padding-bottom: 0;
+      }
+      
+      .upload-lbl {
+        width: 100%;
+        justify-content: center;
+        margin-bottom: 0.5rem;
+        margin-left: 0 !important;
+      }
+    }
   </style>
 </head>
 
 <body>
+  <div id="loader-overlay" class="hidden">
+    <div class="loader-spinner"></div>
+    <h2 class="serif">Establishing Uplink...</h2>
+  </div>
+  <div id="toast"></div>
+
   <div class="made-by-badge">Made by AADISH</div>
 
-  <!-- Login View -->
   <div id="login-view">
     <div class="card login-box">
       <h1>AadiAnswer</h1>
@@ -866,33 +948,26 @@ filter: progid: DXImageTransform.Microsoft.gradient( startColorstr="#E65763", en
     </div>
   </div>
 
-  <!-- App View -->
   <div id="app-view" class="hidden">
     <nav>
       <h2 onclick="app.showDashboard()">AadiAnswer</h2>
       <button class="btn-logout" onclick="app.logout()">Sign Out</button>
     </nav>
 
-    <!-- Dashboard Container -->
     <div id="dashboard-container">
       <h3 class="dashboard-header serif">Select your battlefield</h3>
       <div class="subjects-list" id="subjects-container">
-        <!-- Rendered via JS -->
-      </div>
+        </div>
     </div>
 
-    <!-- Subject Detail Container -->
     <div id="subject-container" class="hidden">
-      <!-- Rendered via JS -->
-    </div>
+      </div>
   </div>
 
-  <!-- Lightbox -->
   <div id="lightbox" onclick="this.classList.remove('show')">
     <img id="lightbox-img" src="" alt="Solution Photo" onclick="event.stopPropagation()">
   </div>
 
-  <!-- WebRTC Camera Modal -->
   <div id="cam-modal" class="hidden">
     <video id="cam-video" autoplay playsinline></video>
     <div class="cam-ctrls">
@@ -946,11 +1021,68 @@ filter: progid: DXImageTransform.Microsoft.gradient( startColorstr="#E65763", en
       let state = { physics: [], chemistry: [], maths: [] };
       let imageState = {};
       let dbSuffix = '';
+      let camStream = null;
+      let camTarget = null;
+      let saveTo;
 
-      // 1. Initialization
+      // --- NEW UTILITIES ---
+      function showToast(message, isError = false) {
+        const toast = document.getElementById('toast');
+        toast.innerText = message;
+        if (isError) toast.classList.add('error');
+        else toast.classList.remove('error');
+        
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3500);
+      }
+
+      function processImage(source, isVideo = false) {
+        return new Promise((resolve) => {
+          const cvs = document.createElement('canvas');
+          const MAX = 1600; // Increased resolution for better text clarity
+          let w = isVideo ? source.videoWidth : source.width;
+          let h = isVideo ? source.videoHeight : source.height;
+          
+          if (w > MAX || h > MAX) {
+            if (w > h) { h *= (MAX / w); w = MAX; }
+            else { w *= (MAX / h); h = MAX; }
+          }
+          
+          cvs.width = w; cvs.height = h;
+          const ctx = cvs.getContext('2d');
+          ctx.drawImage(source, 0, 0, w, h);
+          resolve(cvs.toDataURL('image/jpeg', 0.85)); // Increased quality to 85%
+        });
+      }
+
+      async function uploadToImgBB(b64Data, key, sub, chIdx, sIdx) {
+        try {
+          const pureBase64 = b64Data.replace(/^data:image\/[a-z]+;base64,/, "");
+          const fd = new FormData();
+          fd.append("key", "1ddde7d9840771c25c165fb53920a9ae"); 
+          fd.append("image", pureBase64);
+          
+          const res = await fetch("https://api.imgbb.com/1/upload", { method: "POST", body: fd });
+          const data = await res.json();
+          
+          if (data.success) {
+            imageState[key].push(data.data.url);
+            await saveImagesSync();
+            const blk = document.getElementById(`block-${sub}-${chIdx}-${sIdx}`);
+            if (blk) blk.outerHTML = renderSectionBlock(sub, chIdx, sIdx, state[sub][chIdx].sections[sIdx]);
+          } else {
+            showToast("Upload Failed: " + (data.error ? data.error.message : "Unknown error"), true);
+          }
+        } catch (e) { 
+          console.error("Upload failed", e); 
+          showToast("Network Error: Could not reach ImgBB", true); 
+        }
+      }
+
+      // --- INITIALIZATION ---
       async function init() {
         if (!isFirebaseReady && sessionStorage.getItem('st_auth') === 'true') {
-          alert("⚠️ Firebase is not configured! Please open index.html and update the keys at the top of the <script> tag!");
+          alert("⚠️ Firebase is not configured! Please open index.html and update the keys!");
           document.body.innerHTML = "<h1 style='color:var(--terracotta); text-align:center; margin-top:20%'>FIREBASE KEYS MISSING.<br>Please edit index.html, paste your config, and refresh!</h1>";
           return;
         }
@@ -958,10 +1090,20 @@ filter: progid: DXImageTransform.Microsoft.gradient( startColorstr="#E65763", en
         if (sessionStorage.getItem('st_auth') === 'true') {
           const user = sessionStorage.getItem('st_user') || 'aadish';
           dbSuffix = user === 'aadish' ? '' : '_' + user;
+          
           document.getElementById('login-view').classList.add('hidden');
           document.getElementById('app-view').classList.remove('hidden');
+          
+          // Show loader while fetching
+          const loader = document.getElementById('loader-overlay');
+          loader.classList.remove('hidden');
+          
           await loadData();
           renderDashboard();
+          
+          // Hide loader gracefully
+          loader.style.opacity = '0';
+          setTimeout(() => loader.classList.add('hidden'), 400);
         }
       }
 
@@ -984,7 +1126,7 @@ filter: progid: DXImageTransform.Microsoft.gradient( startColorstr="#E65763", en
         location.reload();
       }
 
-      // 2. Cloud State Mgmt
+      // --- CLOUD STATE MGMT ---
       async function loadData() {
         try {
           const stateDoc = await db.collection("AadiAnswer").doc("state" + dbSuffix).get();
@@ -992,7 +1134,6 @@ filter: progid: DXImageTransform.Microsoft.gradient( startColorstr="#E65763", en
 
           if (stateDoc.exists) {
             state = stateDoc.data();
-            // Data Migration: Ensure all default sections exist on loaded data
             let migrated = false;
             for (let key of ['physics', 'chemistry', 'maths']) {
               if (!state[key]) continue;
@@ -1007,7 +1148,6 @@ filter: progid: DXImageTransform.Microsoft.gradient( startColorstr="#E65763", en
             }
             if (migrated) saveState();
           } else {
-            // Scaffold default cloud data
             for (let key of ['physics', 'chemistry', 'maths']) {
               state[key] = syllabus[key].map(ch => ({
                 name: ch,
@@ -1027,7 +1167,6 @@ filter: progid: DXImageTransform.Microsoft.gradient( startColorstr="#E65763", en
         }
       }
 
-      let saveTo;
       function saveState() {
         clearTimeout(saveTo);
         saveTo = setTimeout(saveStateSync, 800);
@@ -1045,7 +1184,6 @@ filter: progid: DXImageTransform.Microsoft.gradient( startColorstr="#E65763", en
         } catch (e) { console.error("Cloud image list save failed", e); }
       }
 
-      // 3. UI Rendering & Calc
       function calcProgress(secs) {
         let t = 0, d = 0;
         for (let s of secs) {
@@ -1054,16 +1192,7 @@ filter: progid: DXImageTransform.Microsoft.gradient( startColorstr="#E65763", en
         return t > 0 ? { pct: Math.round((d / t) * 100), total: t, done: d } : { pct: 0, noData: true };
       }
 
-      function calcSubjectProgress(sub) {
-        let t = 0, d = 0;
-        for (let ch of state[sub]) {
-          for (let s of ch.sections) {
-            if (!s.skipped) { t += s.total; d += s.done; }
-          }
-        }
-        return t > 0 ? Math.round((d / t) * 100) : 0;
-      }
-
+      // --- UI RENDERING ---
       function showDashboard() {
         renderDashboard();
         document.getElementById('dashboard-container').classList.remove('hidden');
@@ -1073,21 +1202,21 @@ filter: progid: DXImageTransform.Microsoft.gradient( startColorstr="#E65763", en
       function renderDashboard() {
         const cont = document.getElementById('subjects-container');
         cont.innerHTML = `
-      ${renderSubCard('physics', 'Physics', 'sub-phys', '15 Chapters')}
-      ${renderSubCard('chemistry', 'Chemistry', 'sub-chem', '17 Chapters')}
-      ${renderSubCard('maths', 'Mathematics', 'sub-math', '15 Chapters')}
-    `;
+          ${renderSubCard('physics', 'Physics', 'sub-phys', '15 Chapters')}
+          ${renderSubCard('chemistry', 'Chemistry', 'sub-chem', '17 Chapters')}
+          ${renderSubCard('maths', 'Mathematics', 'sub-math', '15 Chapters')}
+        `;
       }
 
       function renderSubCard(key, title, brdCls, subtitle) {
         return `
-      <div class="card subject-card ${brdCls}" onclick="app.showSubject('${key}')">
-        <div class="sub-info">
-          <h3 class="serif">${title}</h3>
-          <p>${subtitle}</p>
-        </div>
-      </div>
-    `;
+          <div class="card subject-card ${brdCls}" onclick="app.showSubject('${key}')">
+            <div class="sub-info">
+              <h3 class="serif">${title}</h3>
+              <p>${subtitle}</p>
+            </div>
+          </div>
+        `;
       }
 
       function showSubject(key) {
@@ -1100,14 +1229,14 @@ filter: progid: DXImageTransform.Microsoft.gradient( startColorstr="#E65763", en
         const titleCls = { physics: 'phys-title', chemistry: 'chem-title', maths: 'math-title' };
 
         let html = `
-      <div class="subject-header">
-        <h2 class="subject-title serif ${titleCls[key]}">
-           <div class="icon-cube" style="background: rgba(255,255,255,0.1); border: 2px solid ${colors[key]}; color: var(--text-dark); font-size:1.2rem; font-family:'DM Sans'; font-weight:bold;">${shortMap[key]}</div>
-           ${titleMap[key]}
-        </h2>
-        <button class="btn" style="background: ${colors[key]}" onclick="app.showDashboard()">Enter HQ</button>
-      </div>
-    `;
+          <div class="subject-header">
+            <h2 class="subject-title serif ${titleCls[key]}">
+               <div class="icon-cube" style="background: rgba(255,255,255,0.1); border: 2px solid ${colors[key]}; color: var(--text-dark); font-size:1.2rem; font-family:'DM Sans'; font-weight:bold;">${shortMap[key]}</div>
+               ${titleMap[key]}
+            </h2>
+            <button class="btn" style="background: ${colors[key]}" onclick="app.showDashboard()">Enter HQ</button>
+          </div>
+        `;
 
         state[key].forEach((ch, idx) => {
           const p = calcProgress(ch.sections);
@@ -1117,22 +1246,22 @@ filter: progid: DXImageTransform.Microsoft.gradient( startColorstr="#E65763", en
           else badge = `<span class="badge inprogress inprogress-${key}">${p.pct}%</span>`;
 
           html += `
-        <div class="chapter-accordion">
-          <div class="chap-header" onclick="app.toggleChap(this)">
-            <div class="chap-info">
-               <span class="chap-no">${String(idx + 1).padStart(2, '0')}</span>
-               <h4>${ch.name}</h4>
+            <div class="chapter-accordion">
+              <div class="chap-header" onclick="app.toggleChap(this)">
+                <div class="chap-info">
+                   <span class="chap-no">${String(idx + 1).padStart(2, '0')}</span>
+                   <h4>${ch.name}</h4>
+                </div>
+                <div id="${key}-ch${idx}-badge">${badge}</div>
+              </div>
+              <div class="chap-body" id="${key}-body-${idx}">
+                <div class="ch-sections" id="${key}-secs-${idx}">
+                   ${renderSections(key, idx)}
+                </div>
+                <button class="add-dpp-btn add-dpp-${key}" onclick="app.addDpp('${key}', ${idx})">+ Add DPP Mission</button>
+              </div>
             </div>
-            <div id="${key}-ch${idx}-badge">${badge}</div>
-          </div>
-          <div class="chap-body" id="${key}-body-${idx}">
-            <div class="ch-sections" id="${key}-secs-${idx}">
-               ${renderSections(key, idx)}
-            </div>
-            <button class="add-dpp-btn add-dpp-${key}" onclick="app.addDpp('${key}', ${idx})">+ Add DPP Mission</button>
-          </div>
-        </div>
-      `;
+          `;
         });
 
         cont.innerHTML = html;
@@ -1156,56 +1285,56 @@ filter: progid: DXImageTransform.Microsoft.gradient( startColorstr="#E65763", en
         else stateBadge = `<span class="badge skipped">Not Started</span>`;
 
         return `
-      <div class="section-block" style="border-left-color: ${s.skipped ? 'var(--lavender-trans3)' : colors[sub]}" id="block-${sub}-${chIdx}-${sIdx}">
-        <div class="section-header">
-          <h5 class="serif">${s.name}</h5>
-          <div>${stateBadge}
-             ${isDPP ? `<span style="cursor:pointer; margin-left:15px; color:var(--terracotta); font-size:1.5rem; line-height:1;" onclick="app.delDpp('${sub}',${chIdx},${sIdx})">&times;</span>` : ''}
+          <div class="section-block" style="border-left-color: ${s.skipped ? 'var(--lavender-trans3)' : colors[sub]}" id="block-${sub}-${chIdx}-${sIdx}">
+            <div class="section-header">
+              <h5 class="serif">${s.name}</h5>
+              <div>${stateBadge}
+                 ${isDPP ? `<span style="cursor:pointer; margin-left:15px; color:var(--terracotta); font-size:1.5rem; line-height:1;" onclick="app.delDpp('${sub}',${chIdx},${sIdx})">&times;</span>` : ''}
+              </div>
+            </div>
+            
+            <div class="ctrl-row">
+              <div class="input-grp-mini">
+                <label>Total Qs</label>
+                <input type="number" min="0" class="input-mini ${sub}-input" value="${s.total}" oninput="app.updateData('${sub}',${chIdx},${sIdx},'total',this.value)">
+              </div>
+              <div class="input-grp-mini">
+                <label>Done</label>
+                <input type="number" min="0" class="input-mini ${sub}-input" value="${s.done}" oninput="app.updateData('${sub}',${chIdx},${sIdx},'done',this.value)">
+              </div>
+              
+              <label class="toggle-lbl">
+                <input type="checkbox" class="toggle-switch" ${s.skipped ? 'checked' : ''} onchange="app.updateData('${sub}',${chIdx},${sIdx},'skipped',this.checked)">
+                Not Needed
+              </label>
+              
+              <div class="sect-progress" style="${dStyle}">
+                 <div class="sp-bar-wrap">
+                    <div class="sp-bar" style="background:${colors[sub]}; width:${s.total > 0 ? Math.round((s.done / s.total) * 100) : 0}%"></div>
+                 </div>
+                 <div class="sp-pct">${s.total > 0 ? Math.round((s.done / s.total) * 100) + '%' : '—'}</div>
+              </div>
+            </div>
+            
+            <div class="upload-area" style="${dStyle}">
+               <label class="upload-lbl ${sub}-up" id="up-lbl-${sub}-${chIdx}-${sIdx}">
+                  <span style="font-size:1.2rem;">+</span> Upload Intel
+                  <input type="file" multiple accept="image/*" class="file-input" onchange="app.handleFiles(this, '${imgKey}', '${sub}',${chIdx},${sIdx})">
+               </label>
+               <button class="upload-lbl ${sub}-up" style="margin-left: 0.5rem; border: none; font-family: inherit; font-size: inherit; cursor: pointer; display: inline-flex;" onclick="app.openCamera('${imgKey}', '${sub}', ${chIdx}, ${sIdx})">
+                  <span style="font-size:1.2rem;">📸</span> Click Now
+               </button>
+               <div class="thumb-grid" id="tb-${sub}-${chIdx}-${sIdx}">
+                  ${imgs.map((src, i) => `
+                    <div class="thumb" style="background-image:url('${src}')" onclick="app.lightbox('${src}')">
+                      <div class="thumb-overlay">Enlarge</div>
+                      <div class="del-thumb" onclick="event.stopPropagation(); app.delImage('${imgKey}',${i}, '${sub}',${chIdx},${sIdx}, '${src}')">&times;</div>
+                    </div>
+                  `).join('')}
+               </div>
+            </div>
           </div>
-        </div>
-        
-        <div class="ctrl-row">
-          <div class="input-grp-mini">
-            <label>Total Qs</label>
-            <input type="number" min="0" class="input-mini ${sub}-input" value="${s.total}" oninput="app.updateData('${sub}',${chIdx},${sIdx},'total',this.value)">
-          </div>
-          <div class="input-grp-mini">
-            <label>Done</label>
-            <input type="number" min="0" class="input-mini ${sub}-input" value="${s.done}" oninput="app.updateData('${sub}',${chIdx},${sIdx},'done',this.value)">
-          </div>
-          
-          <label class="toggle-lbl">
-            <input type="checkbox" class="toggle-switch" ${s.skipped ? 'checked' : ''} onchange="app.updateData('${sub}',${chIdx},${sIdx},'skipped',this.checked)">
-            Not Needed
-          </label>
-          
-          <div class="sect-progress" style="${dStyle}">
-             <div class="sp-bar-wrap">
-                <div class="sp-bar" style="background:${colors[sub]}; width:${s.total > 0 ? Math.round((s.done / s.total) * 100) : 0}%"></div>
-             </div>
-             <div class="sp-pct">${s.total > 0 ? Math.round((s.done / s.total) * 100) + '%' : '—'}</div>
-          </div>
-        </div>
-        
-        <div class="upload-area" style="${dStyle}">
-           <label class="upload-lbl ${sub}-up" id="up-lbl-${sub}-${chIdx}-${sIdx}">
-              <span style="font-size:1.2rem;">+</span> Upload Intel (Photos)
-              <input type="file" multiple accept="image/*" class="file-input" onchange="app.handleFiles(this, '${imgKey}', '${sub}',${chIdx},${sIdx})">
-           </label>
-           <button class="upload-lbl ${sub}-up" style="margin-left: 0.5rem; border: none; font-family: inherit; font-size: inherit; cursor: pointer; display: inline-flex;" onclick="app.openCamera('${imgKey}', '${sub}', ${chIdx}, ${sIdx})">
-              <span style="font-size:1.2rem;">📸</span> Click Now
-           </button>
-           <div class="thumb-grid" id="tb-${sub}-${chIdx}-${sIdx}">
-              ${imgs.map((src, i) => `
-                <div class="thumb" style="background-image:url('${src}')" onclick="app.lightbox('${src}')">
-                  <div class="thumb-overlay">Enlarge</div>
-                  <div class="del-thumb" onclick="event.stopPropagation(); app.delImage('${imgKey}',${i}, '${sub}',${chIdx},${sIdx}, '${src}')">&times;</div>
-                </div>
-              `).join('')}
-           </div>
-        </div>
-      </div>
-    `;
+        `;
       }
 
       function toggleChap(el) {
@@ -1219,16 +1348,61 @@ filter: progid: DXImageTransform.Microsoft.gradient( startColorstr="#E65763", en
 
       function updateData(sub, chIdx, sIdx, field, val) {
         const s = state[sub][chIdx].sections[sIdx];
-        if (field === 'skipped') s.skipped = val;
-        else s[field] = parseInt(val) || 0;
+        if (field === 'skipped') {
+          s.skipped = val;
+        } else {
+          s[field] = Math.max(0, parseInt(val) || 0); 
+        }
 
         saveState();
 
         const blk = document.getElementById(`block-${sub}-${chIdx}-${sIdx}`);
         if (blk) {
-          blk.outerHTML = renderSectionBlock(sub, chIdx, sIdx, s);
+          // 1. Update Block Styles
+          blk.style.borderLeftColor = s.skipped ? 'var(--lavender-trans3)' : colors[sub];
+          
+          // 2. Update Progress Bar & Percentage
+          const pct = s.total > 0 ? Math.round((s.done / s.total) * 100) : 0;
+          const spBar = blk.querySelector('.sp-bar');
+          const spPct = blk.querySelector('.sp-pct');
+          
+          if (spBar) spBar.style.width = s.total > 0 ? `${pct}%` : '0%';
+          if (spPct) spPct.innerText = s.total > 0 ? `${pct}%` : '—';
+
+          // 3. Update Disabled States (Skipped)
+          const sectProgress = blk.querySelector('.sect-progress');
+          const uploadArea = blk.querySelector('.upload-area');
+          const opacity = s.skipped ? '0.4' : '1';
+          const pEvents = s.skipped ? 'none' : 'auto';
+          const filter = s.skipped ? 'grayscale(1)' : 'none';
+
+          if(sectProgress) {
+            sectProgress.style.opacity = opacity;
+            sectProgress.style.pointerEvents = pEvents;
+            sectProgress.style.filter = filter;
+          }
+          if(uploadArea) {
+            uploadArea.style.opacity = opacity;
+            uploadArea.style.pointerEvents = pEvents;
+            uploadArea.style.filter = filter;
+          }
+
+          // 4. Update Section Badge
+          const headerDiv = blk.querySelector('.section-header div');
+          if (headerDiv) {
+            let stateBadge = '';
+            if (s.skipped) stateBadge = `<span class="badge skipped">Skipped</span>`;
+            else if (s.total > 0 && s.done >= s.total) stateBadge = `<span class="badge complete">Complete</span>`;
+            else if (s.total > 0) stateBadge = `<span class="badge inprogress inprogress-${sub}">${pct}%</span>`;
+            else stateBadge = `<span class="badge skipped">Not Started</span>`;
+
+            const isDPP = s.name.startsWith('DPP');
+            const delBtn = isDPP ? `<span style="cursor:pointer; margin-left:15px; color:var(--terracotta); font-size:1.5rem; line-height:1;" onclick="app.delDpp('${sub}',${chIdx},${sIdx})">&times;</span>` : '';
+            headerDiv.innerHTML = stateBadge + delBtn;
+          }
         }
 
+        // 5. Update Chapter Level Badge
         const ch = state[sub][chIdx];
         const p = calcProgress(ch.sections);
         let badge = '';
@@ -1264,11 +1438,10 @@ filter: progid: DXImageTransform.Microsoft.gradient( startColorstr="#E65763", en
         updateData(sub, chIdx, 0, 'none', null);
       }
 
-      // 4. Firebase Cloud Image Handling
+      // --- IMAGES & WEBRTC ---
       async function handleFiles(inp, key, sub, chIdx, sIdx) {
         const files = inp.files;
         if (!files.length) return;
-
         if (!imageState[key]) imageState[key] = [];
 
         const btn = document.getElementById(`up-lbl-${sub}-${chIdx}-${sIdx}`);
@@ -1280,53 +1453,18 @@ filter: progid: DXImageTransform.Microsoft.gradient( startColorstr="#E65763", en
           r.onload = (e) => {
             const img = new Image();
             img.onload = async () => {
-              const cvs = document.createElement('canvas');
-              const MAX = 800;
-              let w = img.width, h = img.height;
-              if (w > MAX || h > MAX) {
-                if (w > h) { h *= (MAX / w); w = MAX; }
-                else { w *= (MAX / h); h = MAX; }
-              }
-              cvs.width = w; cvs.height = h;
-              const ctx = cvs.getContext('2d');
-              ctx.drawImage(img, 0, 0, w, h);
-              const b64 = cvs.toDataURL('image/jpeg', 0.6);
-
-              try {
-                // Free ImgBB Upload
-                const pureBase64 = b64.replace(/^data:image\/[a-z]+;base64,/, "");
-                const formData = new FormData();
-                formData.append("key", "1ddde7d9840771c25c165fb53920a9ae");
-                formData.append("image", pureBase64);
-
-                const res = await fetch("https://api.imgbb.com/1/upload", {
-                  method: "POST",
-                  body: formData
-                });
-                const data = await res.json();
-
-                if (data.success) {
-                  imageState[key].push(data.data.url);
-                  await saveImagesSync();
-
-                  const blk = document.getElementById(`block-${sub}-${chIdx}-${sIdx}`);
-                  if (blk) blk.outerHTML = renderSectionBlock(sub, chIdx, sIdx, state[sub][chIdx].sections[sIdx]);
-                } else {
-                  alert("ImgBB Upload Failed: " + (data.error ? data.error.message : "Unknown error"));
-                }
-              } catch (e) { console.error("Upload failed", e); alert("Cloud Save Failed"); }
+              const b64 = await processImage(img, false);
+              await uploadToImgBB(b64, key, sub, chIdx, sIdx);
             };
             img.src = e.target.result;
           };
           r.readAsDataURL(f);
         }
-
-        btn.innerHTML = originalHTML; // restore button text
+        btn.innerHTML = originalHTML;
       }
 
       async function delImage(key, idx, sub, chIdx, sIdx, url) {
         try {
-          // Only delete if it's a firebase URL
           if (url.includes('firebasestorage')) {
             const ref = storage.refFromURL(url);
             await ref.delete();
@@ -1345,59 +1483,38 @@ filter: progid: DXImageTransform.Microsoft.gradient( startColorstr="#E65763", en
         document.getElementById('lightbox').classList.add('show');
       }
 
-      let camStream = null;
-      let camTarget = null;
       async function openCamera(key, sub, chIdx, sIdx) {
         camTarget = { key, sub, chIdx, sIdx };
         document.getElementById('cam-modal').classList.remove('hidden');
         try {
-          // Attempt backward facing camera first
           camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
           document.getElementById('cam-video').srcObject = camStream;
         } catch(e) {
           try {
-            // Fallback to any camera if environment camera fails
             camStream = await navigator.mediaDevices.getUserMedia({ video: true });
             document.getElementById('cam-video').srcObject = camStream;
           } catch(e2) {
-            alert("No camera found or permission denied.");
+            showToast("Hardware failure: No camera access granted.", true);
             closeCamera();
           }
         }
       }
+
       function closeCamera() {
         if(camStream) camStream.getTracks().forEach(t=>t.stop());
         camStream = null;
         document.getElementById('cam-modal').classList.add('hidden');
       }
+
       async function snapPhoto() {
         if(!camStream || !camTarget) return;
         const vid = document.getElementById('cam-video');
-        const cvs = document.createElement('canvas');
-        cvs.width = vid.videoWidth; cvs.height = vid.videoHeight;
-        cvs.getContext('2d').drawImage(vid,0,0);
-        const b64 = cvs.toDataURL('image/jpeg', 0.6);
+        const b64 = await processImage(vid, true);
         closeCamera();
         
-        // Upload
         const { key, sub, chIdx, sIdx } = camTarget;
         if (!imageState[key]) imageState[key] = [];
-        try {
-          const pureBase64 = b64.replace(/^data:image\/[a-z]+;base64,/, "");
-          const fd = new FormData();
-          fd.append("key", "1ddde7d9840771c25c165fb53920a9ae");
-          fd.append("image", pureBase64);
-          const res = await fetch("https://api.imgbb.com/1/upload", { method: "POST", body: fd });
-          const data = await res.json();
-          if (data.success) {
-            imageState[key].push(data.data.url);
-            await saveImagesSync();
-            const blk = document.getElementById(`block-${sub}-${chIdx}-${sIdx}`);
-            if (blk) blk.outerHTML = renderSectionBlock(sub, chIdx, sIdx, state[sub][chIdx].sections[sIdx]);
-          } else {
-            alert("ImgBB Upload Failed: " + (data.error ? data.error.message : "Unknown error"));
-          }
-        } catch (e) { console.error("Upload failed", e); alert("Cloud Save Failed"); }
+        await uploadToImgBB(b64, key, sub, chIdx, sIdx);
       }
 
       return { login, logout, showDashboard, showSubject, toggleChap, updateData, addDpp, delDpp, handleFiles, lightbox, delImage, init, openCamera, closeCamera, snapPhoto };
